@@ -41,7 +41,8 @@ products from Adafruit!
 #define MOSI (3)
 #define SS   (4)
 #define MISO (5)
-#define LED (13)
+#define DOOR (12)
+#define LED (11)
 
 Adafruit_PN532 nfc(SCK, MISO, MOSI, SS);
 
@@ -49,8 +50,11 @@ void setup(void) {
   Serial.begin(9600);
   Serial.println("Hello!");
 
+  // pin setup
   pinMode(LED, OUTPUT);
+  pinMode(DOOR, OUTPUT);
   digitalWrite(LED, LOW);
+  digitalWrite(DOOR, LOW);
 
   nfc.begin();
 
@@ -82,18 +86,35 @@ void loop(void) {
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
   
   if(success) {
-    Serial.print("Your uid is:");
+    
+    // out uid
+    Serial.print("Detected UID:");
     for(int i=0; i < uidLength; i++) {
       Serial.print(" ");
       Serial.print(uid[i]);
     }
-    
     Serial.println("");
+
+    // unlock the door
+    digitalWrite(DOOR, HIGH);
     
-    digitalWrite(LED, HIGH);
-    delay(5000);
+    // blink LED
+    for(int i=0; i<5; i = i+1) {
+      digitalWrite(LED, LOW);
+      delay(100);    
+      digitalWrite(LED, HIGH);
+      delay(100);
+    }
+
+    // wait another five seconds before re-entering the loop
+    delay(4000);
+    
+    // turn led off
     digitalWrite(LED, LOW);
     
+    // lock door
+    digitalWrite(DOOR, LOW);    
+
   }
     
 }
